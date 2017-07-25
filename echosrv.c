@@ -18,39 +18,39 @@ int main(void)
 	server.start();
 	loop.loop();
 	*/
-
-
 	struct socket_server* ss = socket_server_create();
 	int listen_id = socket_server_listen(ss, 100, "", 8888, 32);
 	socket_server_start(ss, 200, listen_id);
 
 	// 事件循环
 	struct socket_message result;
-	for (;;) {
+	for (;;) 
+	{
 		int type = socket_server_poll(ss, &result, NULL);    //--当（一般在同一个进程的起线程）调用socket_server_exit(ss)时候会使得
 		                                                    //这个循环事件退出， type = SOCKET_EXIT
 		// DO NOT use any ctrl command (socket_server_close , etc. ) in this thread.
-		switch (type) {
-		case SOCKET_EXIT:
-			goto EXIT_LOOP;
-		case SOCKET_DATA:
-			printf("message(%" PRIuPTR ") [id=%d] size=%d\n",result.opaque,result.id, result.ud);
-			socket_server_send(ss, result.id, result.data, result.ud);
-			//free(result.data);
-			break;
-		case SOCKET_CLOSE:
-			printf("close(%" PRIuPTR ") [id=%d]\n",result.opaque,result.id);
-			break;
-		case SOCKET_OPEN:
-			printf("open(%" PRIuPTR ") [id=%d] %s\n",result.opaque,result.id,result.data);
-			break;
-		case SOCKET_ERROR:
-			printf("error(%" PRIuPTR ") [id=%d]\n",result.opaque,result.id);
-			break;
-		case SOCKET_ACCEPT:
-			printf("accept(%" PRIuPTR ") [id=%d %s] from [%d]\n",result.opaque, result.ud, result.data, result.id);
-			socket_server_start(ss, 300, result.ud);
-			break;
+		switch (type) 
+		{
+			case SOCKET_EXIT:
+				goto EXIT_LOOP;
+			case SOCKET_DATA:
+				printf("message(%" PRIuPTR ") [id=%d] size=%d\n",result.opaque,result.id, result.ud);
+				socket_server_send(ss, result.id, result.data, result.ud);
+				//free(result.data);
+				break;
+			case SOCKET_CLOSE:
+				printf("close(%" PRIuPTR ") [id=%d]\n",result.opaque,result.id);
+				break;
+			case SOCKET_OPEN:
+				printf("open(%" PRIuPTR ") [id=%d] %s\n",result.opaque,result.id,result.data);
+				break;
+			case SOCKET_ERROR:
+				printf("error(%" PRIuPTR ") [id=%d]\n",result.opaque,result.id);
+				break;
+			case SOCKET_ACCEPT:
+				printf("accept(%" PRIuPTR ") [id=%d %s] from [%d]\n",result.opaque, result.ud, result.data, result.id);
+				socket_server_start(ss, 300, result.ud);
+				break;
 		}
 	}
 

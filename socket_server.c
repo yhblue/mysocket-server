@@ -40,7 +40,8 @@ struct write_buffer {
 };
 
 // 应用层对socket的抽象
-struct socket {
+struct socket 
+{
 	int fd;		// 文件描述符
 	int id;		// 应用层维护的一个与fd相对应的id
 	int type;	// socket类型(或状态)
@@ -51,19 +52,26 @@ struct socket {
 	struct write_buffer * tail;		// 发送缓冲区链表尾指针
 };
 
-struct socket_server {
-	int recvctrl_fd;		// 管道读端，用于接受控制命令
-	int sendctrl_fd;		// 管道写端，用于发送控制命令
-	int checkctrl;			// 是否检查控制命令
-	poll_fd event_fd;		// epoll fd
-	int alloc_id;			// 用于分配id
-	int event_n;			// epoll_wait返回的事件个数
-	int event_index;		// 当前处理的事件序号，从0开始
-	struct event ev[MAX_EVENT];			// 用于epoll_wait
+struct socket_server 
+{
+	int recvctrl_fd;		            // 管道读端，用于接受控制命令
+	int sendctrl_fd;		            // 管道写端，用于发送控制命令
+	int checkctrl;			            // 是否检查控制命令
+	poll_fd event_fd;		            // epoll fd
+	int alloc_id;			            // 用于分配id
+	int event_n;			            // epoll_wait返回的事件个数
+	int event_index;		            // 当前处理的事件序号，从0开始
+	struct event ev[MAX_EVENT];			// 用于epoll_wait,把返回的事件的数据的指针都存放在这里了
 	struct socket slot[MAX_SOCKET];		// 应用层预先分配的socket数组(即socket池)
 	char buffer[MAX_INFO];				// 临时数据，比如保存新建连接的对等端的地址信息
-	fd_set rfds;		// 用于select
+	fd_set rfds;		                // 用于select
 };
+
+// struct event {
+// 	void * s;
+// 	bool read;
+// 	bool write;
+// };
 
 // 以下6个结构体是控制命令数据包包体结构
 struct request_open {
@@ -118,7 +126,8 @@ struct request_package {
 };
 
 // 网际IP地址
-union sockaddr_all {
+union sockaddr_all 
+{
 	struct sockaddr s;
 	struct sockaddr_in v4;
 	struct sockaddr_in6 v6;
@@ -128,26 +137,33 @@ union sockaddr_all {
 #define FREE free
 
 static void
-socket_keepalive(int fd) {
+socket_keepalive(int fd) 
+{
 	int keepalive = 1;
 	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&keepalive , sizeof(keepalive));  
 }
 
 // 从socket池中获取一个空的socket，并为其分配一个id(0~2147483647即2^31-1)
 static int
-reserve_id(struct socket_server *ss) {
+reserve_id(struct socket_server *ss) 
+{
 	int i;
-	for (i=0;i<MAX_SOCKET;i++) {
+	for (i=0;i<MAX_SOCKET;i++) 
+	{
 		int id = __sync_add_and_fetch(&(ss->alloc_id), 1);
-		if (id < 0) {
+		if (id < 0) 
+		{
 			// 此时id = 0x80000000即-2147483648
 			id = __sync_and_and_fetch(&(ss->alloc_id), 0x7fffffff);		// id = 0
 		}
 		struct socket *s = &ss->slot[id % MAX_SOCKET];
-		if (s->type == SOCKET_TYPE_INVALID) {
-			if (__sync_bool_compare_and_swap(&s->type, SOCKET_TYPE_INVALID, SOCKET_TYPE_RESERVE)) {
+		if (s->type == SOCKET_TYPE_INVALID) 
+		{
+			if (__sync_bool_compare_and_swap(&s->type, SOCKET_TYPE_INVALID, SOCKET_TYPE_RESERVE)) 
+			{
 				return id;
-			} else {
+			} else 
+			{
 				// retry
 				--i;
 			}
@@ -226,7 +242,7 @@ force_close(struct socket_server *ss, struct socket *s, struct socket_message *r
 	if (s->type != SOCKET_TYPE_PACCEPT && s->type != SOCKET_TYPE_PLISTEN) {
 		sp_del(ss->event_fd, s->fd);	// epoll取消关注该套接字
 	}
-	// SOCKET_TYPE_BIND类型不需要close(比如stdin,stdout等)，其它socket类型需要close
+	// SOCKET_TYPE_BIND 类型不需要close(比如stdin,stdout等)，其它socket类型需要close
 	if (s->type != SOCKET_TYPE_BIND) {
 		close(s->fd);
 	}
@@ -796,14 +812,17 @@ socket_server_poll(struct socket_server *ss, struct socket_message * result, int
 }
 
 // 向管道发送请求
-static void
-send_request(struct socket_server *ss, struct request_package *request, char type, int len) {
+static void send_request(struct socket_server *ss, struct request_package *request, char type, int len) 
+{
 	request->header[6] = (uint8_t)type;
 	request->header[7] = (uint8_t)len;
-	for (;;) {
+	for (;;) 
+	{
 		int n = write(ss->sendctrl_fd, &request->header[6], len+2);
-		if (n<0) {
-			if (errno != EINTR) {
+		if (n<0) 
+		{
+			if (errno != EINTR)
+			{
 				fprintf(stderr, "socket-server : send ctrl command error %s.\n", strerror(errno));
 			}
 			continue;
@@ -817,7 +836,8 @@ send_request(struct socket_server *ss, struct request_package *request, char typ
 static int
 open_request(struct socket_server *ss, struct request_package *req, uintptr_t opaque, const char *addr, int port) {
 	int len = strlen(addr);
-	if (len + sizeof(req->u.open) > 256) {
+	if (len + sizeof(req->u.open) > 256) 
+	{
 		fprintf(stderr, "socket-server : Invalid addr %s.\n",addr);
 		return 0;
 	}
