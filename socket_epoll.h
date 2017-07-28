@@ -73,5 +73,5 @@ sp_nonblocking(int fd) {
 
 	fcntl(fd, F_SETFL, flag | O_NONBLOCK);
 }
-
+//在修改文件描述符标志F_GETFD或文件状态标志F_GETFL时,要先获取当前的状态，再在当前的状态上进行修改。
 #endif

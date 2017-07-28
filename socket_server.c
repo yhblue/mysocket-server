@@ -145,7 +145,8 @@ socket_keepalive(int fd)
 	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&keepalive , sizeof(keepalive));  
 }
 
-// 从socket池中获取一个空的socket，并为其分配一个id(0~2147483647即2^31-1)
+// 从socket池中获取一个空
+// 的socket，并为其分配一个id(0~2147483647即2^31-1)
 static int
 reserve_id(struct socket_server *ss) 
 {
@@ -224,19 +225,21 @@ socket_server_create() {
 }
 
 // 强制关闭套接字
-static void
-force_close(struct socket_server *ss, struct socket *s, struct socket_message *result) {
+static void force_close(struct socket_server *ss, struct socket *s, struct socket_message *result) 
+{
 	result->id = s->id;
 	result->ud = 0;
 	result->data = NULL;
 	result->opaque = s->opaque;
-	if (s->type == SOCKET_TYPE_INVALID) {
+	if (s->type == SOCKET_TYPE_INVALID) 
+	{
 		return;
 	}
 	assert(s->type != SOCKET_TYPE_RESERVE);
 	// 销毁发送缓冲区
 	struct write_buffer *wb = s->head;
-	while (wb) {
+	while (wb) 
+	{
 		struct write_buffer *tmp = wb;
 		wb = wb->next;
 		FREE(tmp->buffer);
@@ -604,8 +607,8 @@ block_readpipe(int pipefd, void *buffer, int sz) {
 	}
 }
 
-static int
-has_cmd(struct socket_server *ss) {
+static int has_cmd(struct socket_server *ss) 
+{
 	struct timeval tv = {0,0};
 	int retval;
 
