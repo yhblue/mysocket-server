@@ -35,7 +35,7 @@ int main(void)
 				goto EXIT_LOOP;
 			case SOCKET_DATA:
 				printf("message(%" PRIuPTR ") [id=%d] size=%d\n",result.opaque,result.id, result.ud);
-				socket_server_send(ss, result.id, result.data, result.ud);
+				socket_server_send(ss, result.id, result.data, result.ud);//马上返回，不阻塞
 				//free(result.data);
 				break;
 			case SOCKET_CLOSE:

@@ -16,24 +16,24 @@ static void *_poll(void * ud)
 		// DO NOT use any ctrl command (socket_server_close , etc. ) in this thread.
 		switch (type) 
 		{
-		case SOCKET_EXIT:
-			return NULL;
-		case SOCKET_DATA:
-			printf("message(%lu) [id=%d] size=%d\n",result.opaque,result.id, result.ud);
-			free(result.data);  //如果调用了send函数，在函数内部会自动free，如果再free就会出错
-			break;
-		case SOCKET_CLOSE:
-			printf("close(%lu) [id=%d]\n",result.opaque,result.id);
-			break;
-		case SOCKET_OPEN:
-			printf("open(%lu) [id=%d] %s\n",result.opaque,result.id,result.data);
-			break;
-		case SOCKET_ERROR:
-			printf("error(%lu) [id=%d]\n",result.opaque,result.id);
-			break;
-		case SOCKET_ACCEPT:
-			printf("accept(%lu) [id=%d %s] from [%d]\n",result.opaque, result.ud, result.data, result.id);
-			break;
+			case SOCKET_EXIT:
+				return NULL;
+			case SOCKET_DATA:
+				printf("message(%lu) [id=%d] size=%d\n",result.opaque,result.id, result.ud);
+				free(result.data);  //如果调用了send函数，在函数内部会自动free，如果再free就会出错
+				break;
+			case SOCKET_CLOSE:
+				printf("close(%lu) [id=%d]\n",result.opaque,result.id);
+				break;
+			case SOCKET_OPEN:
+				printf("open(%lu) [id=%d] %s\n",result.opaque,result.id,result.data);
+				break;
+			case SOCKET_ERROR:
+				printf("error(%lu) [id=%d]\n",result.opaque,result.id);
+				break;
+			case SOCKET_ACCEPT:
+				printf("accept(%lu) [id=%d %s] from [%d]\n",result.opaque, result.ud, result.data, result.id);
+				break;
 		}
 	}
 }
